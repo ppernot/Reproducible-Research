@@ -1,0 +1,6 @@
+{
+  "name": "Reproducible-research",
+  "tagline": "Codes and data to reproduce the results of reserarch by P. Pernot",
+  "body": "# Reproducible Research\r\nCodes to reproduce the results of the following papers:\r\n\r\n* [PUIF](./PUIF) \"The parameters uncertainty inflation fallacy\", by P. Pernot (submitted)\r\n* [CalPred](./CalPred) \"A critical review of statistical calibration/prediction models handling data inconsistency and model  inadequacy\", by P. Pernot and F. Cailliez (submitted)\r\n\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
