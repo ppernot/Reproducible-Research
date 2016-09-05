@@ -1,0 +1,1205 @@
+Data and results for article
+============
+
+```{r, echo=FALSE}
+dest = 'TabsAndFigs/' # where to send the figs and tables
+dir.create(path=dest, 
+           showWarnings = FALSE)
+```
+
+Misc. functions
+------------
+```{r Functions, echo=FALSE, include=FALSE}
+## @knitr Init
+if(!require(Hmisc))
+  install.packages("Hmisc",dependencies=TRUE) # Plot error bars
+if(!require(knitr))
+  install.packages("knitr",dependencies=TRUE) # kable
+if(!require(formatR))
+  install.packages("formatR",dependencies=TRUE) # Pretty printing
+if(!require(xtable))
+  install.packages("xtable",dependencies=TRUE) # Output tables as latex code
+if(!require(fields))
+  install.packages("fields",dependencies=TRUE) # two.colors
+if(!require(lmtest))
+  install.packages("lmtest",dependencies=TRUE) # Linearity tests
+if(!require(RColorBrewer))
+  install.packages("RColorBrewer",dependencies=TRUE) # Color Sets
+if(!require(robustbase))
+  install.packages("robustbase",dependencies=TRUE) # Robust stats
+if(!require(Rfit))
+  install.packages("Rfit",dependencies=TRUE) # Robust fit
+# if(!require(vioplot))
+#   install.packages("vioplot",dependencies=TRUE) # Violin plots
+if(!require(outliers))
+  install.packages("outliers",dependencies=TRUE) # Outlier detection
+if(!require(BAS)) 
+  install.packages("BAS",dependencies=TRUE) # Bayesian sampling
+if(!require(robcor)) 
+  install.packages("robcor",dependencies=TRUE) # Robust correlations
+if(!require(data.table)) 
+  install.packages("data.table",dependencies=TRUE) # Tables commodities
+
+cols=RColorBrewer::brewer.pal(8,"Set2")
+cols=cbind(cols,cols)
+blue_tr=rgb(unlist(t(col2rgb("blue"))),
+            alpha=120,maxColorValue = 255)
+red_tr=rgb(unlist(t(col2rgb("red"))),
+            alpha=120,maxColorValue = 255)
+green_tr=rgb(unlist(t(col2rgb("green"))),
+            alpha=80,maxColorValue = 255)
+orchid_tr=rgb(unlist(t(col2rgb("orchid"))),
+            alpha=80,maxColorValue = 255)
+
+myVioplot = function (datas, range = 1.5, h = NULL, 
+                      ylim = NULL, names = NULL, 
+                      horizontal = FALSE, col = 1:length(datas), 
+                      border = "black", lty = 1, 
+                      lwd = 1, rectCol = "black", 
+                      colMed = "white", pchMed = 19, 
+                      at, add = FALSE, wex = 1, 
+                      drawRect = TRUE, side='b',...) 
+{
+  #   datas <- list(x, ...)
+  n <- length(datas)
+  if (missing(at)) 
+    at <- 1:n
+  upper <- vector(mode = "numeric", length = n)
+  lower <- vector(mode = "numeric", length = n)
+  q1 <- vector(mode = "numeric", length = n)
+  q3 <- vector(mode = "numeric", length = n)
+  med <- vector(mode = "numeric", length = n)
+  base <- vector(mode = "list", length = n)
+  height <- vector(mode = "list", length = n)
+  baserange <- c(Inf, -Inf)
+  args <- list(display = "none")
+  if (!(is.null(h))) 
+    args <- c(args, h = h)
+  for (i in 1:n) {
+    data <- datas[[i]]
+    data.min <- min(data)
+    data.max <- max(data)
+    q1[i] <- quantile(data, 0.975, na.rm=TRUE)
+    q3[i] <- quantile(data, 0.025, na.rm=TRUE)
+    med[i] <- median(data, na.rm=TRUE)
+    iqd <- q3[i] - q1[i]
+    upper[i] <- min(q3[i] + range * iqd, data.max)
+    lower[i] <- max(q1[i] - range * iqd, data.min)
+    est.xlim <- c(min(lower[i], data.min), max(upper[i], 
+                                               data.max))
+    #     smout <- do.call("sm.density", c(list(data, xlim = est.xlim), 
+    #                                      args))
+    #     hscale <- 0.4/max(smout$estimate) * wex
+    #     base[[i]] <- smout$eval.points
+    #     height[[i]] <- smout$estimate * hscale
+    smout <- do.call("density", args=list(data,cut=0))
+    hscale <- 0.4/max(smout$y) * wex
+    base[[i]] <- smout$x
+    height[[i]] <- smout$y * hscale
+    t <- range(base[[i]])
+    baserange[1] <- min(baserange[1], t[1])
+    baserange[2] <- max(baserange[2], t[2])
+  }
+  if (!add) {
+    xlim <- if (n == 1) 
+      at + c(-0.5, 0.5)
+    else range(at) + min(diff(at))/2 * c(-1, 1)
+    if (is.null(ylim)) {
+      ylim <- baserange
+    }
+  }
+  if (is.null(names)) {
+    label <- 1:n
+  }
+  else {
+    label <- names
+  }
+  boxwidth <- 0.05 * wex
+  if (!add) 
+    plot.new()
+  if (!horizontal) {
+    if (!add) {
+      plot.window(xlim = xlim, ylim = ylim, ...)
+      #       axis(2)
+      ###       axis(1, at = at, label = label)
+    }
+    box()
+    for (i in 1:n) {
+      if( side =='b' ) {
+        x = c(at[i] - height[[i]], rev(at[i] + height[[i]]))
+        y = c(base[[i]], rev(base[[i]]))
+        } else {
+          if(side== 'l') {
+            x = c(at[i] - height[[i]], rev(at[i]+ 0*height[[i]]))
+            y = c(base[[i]], rev(base[[i]]))          
+            } else {
+              x = c(at[i]- 0*height[[i]], rev(at[i] + height[[i]]))
+              y = c(base[[i]], rev(base[[i]]))
+              }
+          }
+      polygon(x,y, col = col[i], border = border, 
+              lty = lty, lwd = lwd)
+      if (drawRect) {
+        lines(at[c(i, i)], c(lower[i], upper[i]), lwd = lwd, 
+              lty = lty)
+        rect(at[i] - boxwidth/2, q1[i], at[i] + boxwidth/2, 
+             q3[i], col = rectCol)
+        points(at[i], med[i], pch = pchMed, col = colMed)
+      }
+    }
+  }
+  else {
+    if (!add) {
+      plot.window(xlim = ylim, ylim = xlim,...)
+      #       axis(1)
+      ###       axis(2, at = at, label = label)
+    }
+    box()
+    for (i in 1:n) {   if( side =='b' ) {
+        x = c(at[i] - height[[i]], rev(at[i] + height[[i]]))
+        y = c(base[[i]], rev(base[[i]]))
+        } else {
+          if(side== 'l') {
+            x = c(at[i] - height[[i]], rev(at[i]+ 0*height[[i]]))
+            y = c(base[[i]], rev(base[[i]]))          
+            } else {
+              x = c(at[i]- 0*height[[i]], rev(at[i] + height[[i]]))
+              y = c(base[[i]], rev(base[[i]]))
+              }
+          }
+      polygon(y,x,
+              col = col[i], border = border, 
+              lty = lty, lwd = lwd)
+      if (drawRect) {
+        lines(c(lower[i], upper[i]), at[c(i, i)], lwd = lwd, 
+              lty = lty)
+        rect(q1[i], at[i] - boxwidth/2, q3[i], at[i] + 
+               boxwidth/2, col = rectCol)
+        points(med[i], at[i], pch = pchMed, col = colMed)
+      }
+    }
+  }
+  invisible(list(upper = upper, lower = lower, median = med, 
+                 q1 = q1, q3 = q3))
+}
+correlMethList = function(methList,data,keep,nBoot=500,robust=FALSE) {
+  
+  if(robust) 
+    fc = function(x) robcor(x)[1,2]
+  else
+    fc = function(x) cor(x,method='spearman')[1,2]
+  
+  y = data$exp1[keep]
+  n=length(y)
+  cc.med=cc.minq=cc.maxq=c()
+  resu.med=resu.minq=resu.maxq=NULL
+
+  for (meth in methList) {
+    x=data[[meth]][keep]
+    
+    cc=c()
+    for (i in 1:nBoot) {
+      sub=sample.int(n,size=n,replace=TRUE)
+      cc[i]= fc(cbind(x[sub],y[sub]))
+    }
+    cc.med[[meth]]  = fc(cbind(x,y)) #median(cc)
+    cc.minq[[meth]] = quantile(cc,0.025)
+    cc.maxq[[meth]] = quantile(cc,0.975)
+    resu.med=rbind(resu.med,data.frame(Method=meth,cor=cc.med[[meth]],
+                                 stringsAsFactors=FALSE,row.names=NULL))    
+    resu.minq=rbind(resu.minq,data.frame(Method=meth,cor=cc.minq[[meth]],
+                                 stringsAsFactors=FALSE,row.names=NULL))    
+    resu.maxq=rbind(resu.maxq,data.frame(Method=meth,cor=cc.maxq[[meth]],
+                                 stringsAsFactors=FALSE,row.names=NULL))    
+  }
+  return(list(med=resu.med,minq=resu.minq,maxq=resu.maxq))
+}
+regressMethList = function(methList,data,keep,
+                           regLin=FALSE, robust=FALSE) {
+  fitFunc = lm
+  if(robust) fitFunc = rfit
+
+  y = data$exp1[keep]
+  reg = list()
+  sdr = sdwr=c()
+  resu=NULL
+  for (meth in methList) {
+    x=data[[meth]][keep]
+    if(regLin) {
+      mreg=fitFunc(y~x)
+    } else {
+      mreg=fitFunc(y~x+I(x^2))  
+      if(!robust)
+        if(anova(mreg)$Pr[2]>0.05) mreg=fitFunc(y~x)
+      
+    }
+    
+    reg[[meth]]  = mreg
+    sdwr[[meth]] = sd(mreg$residuals)
+    
+    if(regLin) {
+      resu=rbind(resu,data.frame(Method=meth,
+                                 a0=mreg$coefficients[1],
+                                 a1=mreg$coefficients[2],
+                                 RMS=sdwr[[meth]],
+                                 stringsAsFactors=FALSE,row.names=NULL)
+                 )
+    } else {
+      resu=rbind(resu,data.frame(Method=meth,
+                                 a0=mreg$coefficients[1],
+                                 a1=mreg$coefficients[2],
+                                 a2=(if(mreg$rank==3) mreg$coefficients[3] else 0),
+                                 RMS=sdwr[[meth]],
+                                 stringsAsFactors=FALSE,row.names=NULL)
+                 )
+    }
+    
+  }
+  return(list(resu=resu,reg=reg))
+}
+looStatMethList = function (methList,data,keep,regLin,robust=FALSE) {
+  yref = data$exp1[keep]
+  ym=mean(yref)
+  looStat=data.frame()
+  for (meth in methList) {
+    xref=data[[meth]][keep]
+    yloo=c()
+    for (iloo in 1:length(yref)) {
+      y = yref[-iloo] 
+      x = xref[-iloo]
+      if(regLin) {
+        if(robust)
+          mreg=lmrob(y~x)
+        else
+          mreg=lm(y~x)
+      } else {
+        if(robust)
+          mreg=lmrob(y~x+I(x^2))
+        else
+          mreg=lm(y~x+I(x^2))
+        
+        if(!robust)
+          if(anova(mreg)$Pr[2]>0.05) mreg=lm(y~x)
+        
+      }
+      yp=predict(mreg,data.frame(x=xref))
+      yloo[iloo]=yp[iloo]
+    }
+    looStat=rbind(looStat,data.frame(Method=meth, 
+                                     Q2=1-sum((yloo-yref)^2)/sum((ym-yref)^2)))
+  }
+  return(looStat)  
+}
+looPlotMethList = function (methList,data,keep,regLin,plim=c(0,1),robust=FALSE) {
+  yref = data$exp1[keep]
+  par(mfrow=c(nMeth/4,4),mar=c(4,4,2,0.1),cex.main=1,cex.axis=1,cex.lab=1)
+  for (meth in methList) {
+    xref = data[[meth]][keep]
+    plot(xref,xref,xlim=c(0,max(yref)),ylim=plim,type="n", 
+         xlab="Predicted Gap / eV", 
+         ylab="Pred. Uncert (67%) / eV",
+         main=meth)
+    xp=seq(-3,30,length.out=100)
+    cmin=c()
+    for (iloo in 1:length(yref)) {
+      y = yref[-iloo]
+      x = xref[-iloo]
+      if(regLin) {
+        if(robust)
+          mreg=lmrob(y~x)
+        else
+          mreg=lm(y~x)
+      } else {
+        if(robust)
+          mreg=lmrob(y~x+I(x^2))
+        else
+          mreg=lm(y~x+I(x^2))
+        
+        if(!robust)
+          if(anova(mreg)$Pr[2]>0.05) mreg=lm(y~x)
+        
+      }   
+      yp=predict(mreg,data.frame(x=xp),interval="prediction",level=0.67)
+      incr=order(yp[,1])
+      lines(yp[incr,1],yp[incr,3]-yp[incr,1],col="blue",lty=1,lwd=2)
+      cmin[iloo]=min(yp[,3]-yp[,1])
+    }  
+    #print(paste(meth,data$System[order(cmin)[1:3]],sep=":"))
+  }
+}
+predictPlotMethList = function (methList,data,keep,reg,plim=c(0,1),cols) {  
+  yref = data$exp1[keep]
+  par(mfrow=c(1,1))
+  x=seq(-4,30,length.out=100)
+  plot(x,x,xlim=c(0,max(yref)),ylim=plim,type="n", 
+       xlab="Predicted Gap / eV", ylab="Pred. Uncert (67%) / eV")
+  i=0
+  ltyTab=c()
+  for (meth in methList) {
+    i=i+1
+    mreg=reg[[meth]]
+    yp=predict(mreg,data.frame(x),interval="prediction",level=0.67)
+    lty= 1 + 2*(i>=9)
+    if(mreg$rank==3) lty=2
+    ltyTab[i]=lty
+    lines(yp[,1],yp[,3]-yp[,1],col=cols[i],lty=lty,lwd=2)
+  }
+  legend("bottomright",methList,col=cols,
+         lty=ltyTab,lwd=2,ncol=4,cex=0.8,bg="white")
+}
+mplot= function(meth,reg,data,tag=FALSE,plim=NULL,log="",
+                predictPlot=TRUE,add=FALSE,col='red') {
+  mreg=reg[[meth]]
+  x=data[[meth]]
+  if(!add) {
+    plot(x,data$exp1,col="blue",pch=20,cex=0.5,log=log,
+         xlim=plim,ylim=plim,xlab="Calc.",ylab="Exp.",
+         main=meth,lheight=0.5)  
+    if (tag) text(x,y,data$System[keep])    
+  }
+  x = seq(plim[1],plim[2],length.out=100)
+  y = mreg$coefficients[1] + x * mreg$coefficients[2]
+  if(length(mreg$coefficients)>2) y = y + x^2 * mreg$coefficients[3]
+  lines(x,y,col=col)    
+  lines(x,x,col="black",lty=2)    
+  
+  if(predictPlot) {
+    yp=suppressWarnings(predict(mreg,data.frame(x),
+                                interval="prediction",level=0.67))
+    lines(x,yp[,2],col=col,lty=2)
+    lines(x,yp[,3],col=col,lty=2)
+    }
+  }
+residualsPlot= function(meth,reg,data, weighted=FALSE, tag=FALSE, plim=NULL, log="") {
+  mreg=reg[[meth]]
+  if(weighted) {
+    wres=(mreg$residuals/mreg$weights)
+    ylab="Weighted residuals"
+  } else {
+    wres=mreg$residuals        
+    ylab="Residuals / eV"
+  }
+  plot(mreg$model$y, wres, col="blue",pch=20,cex=0.5,
+       xlab="Exp. / eV",ylab=ylab,ylim=plim,main=meth)
+  if (tag) text(mreg$model$y,wres,data$System[keep],pos=4,offset=0.1)
+  abline(h=0,col="black",lty=2)  
+  #title(paste(meth,": St. dev.=",round(sd(wres),3)))
+}
+genColors = function(sample) {
+  ncols=length(sample)
+  co=(    sample -min(sample))/
+    (max(sample)-min(sample))
+  indx=round(1+(ncols-1)*co)
+  cols=two.colors(ncols,start="blue",middle="white",end="red")[indx]
+  return(cols)
+}
+# Explicit linear regression with formulae of text
+wreglin = function(x,y,uy){
+  n=length(x)
+  
+  # Define weights
+  w=1/uy^2
+  
+  d = sum(w)*sum(w*x^2)-sum(w*x)^2
+  b = (sum(w)*sum(w*x*y)-sum(w*x)*sum(w*y))/d 
+  a = sum(w*y)/sum(w)-b*sum(w*x)/sum(w)
+  x2= sum(w*(y-a-b*x)^2)
+  if(x2 <= qchisq(0.05,df=n-2)) 
+    stop(paste('exp. errors too large',x2))
+
+  for (i in 1:5) {
+    
+    ud2 = max( 0,
+               1 /(n-2) *sum((y-a-b*x)^2)-mean(uy^2)
+             )
+    
+    # Redefine weights after variance partition
+    w=1/(ud2+uy^2)
+    
+    d = sum(w)*sum(w*x^2)-sum(w*x)^2
+    b = (sum(w)*sum(w*x*y)-sum(w*x)*sum(w*y))/d 
+    a = sum(w*y)/sum(w)-b*sum(w*x)/sum(w)
+    ub2 =  sum(w)/d
+    ua2 =  sum(w*x^2)/d
+    cab = -sum(w*x)/sum(w)*ub2         
+  }
+  
+  return(list(a=a,b=b,ud2=ud2,ua2=ua2,ub2=ub2,cab=cab))
+}
+predlin = function(r,x) {
+  a = r$a; b=r$b; ud2= r$ud2; ua2=r$ua2; ub2=r$ub2; cab=r$cab
+  p   = a + b*x
+  ul2 = ua2 + x^2*ub2 + 2*x*cab
+  up2 = ud2 + ul2
+  return(list(p=p,up=up2^0.5,ul=ul2^0.5,ratio=ul2/up2))
+}
+mywols=function(x,y,uy,fac=1) {
+  
+  r = wreglin(x,y,uy)
+  
+  # Mean variance and max contrib of line uncert.
+  ns = 1000
+  x0 = seq(min(x),max(x),len=ns)
+  pr  = predlin(r,x0)
+  vmean = mean(pr$up^2)
+  ratio = max(pr$ratio)
+    
+  # Coverage score
+  pr = predlin(r,x)
+  vtot=mean(uy^2)+vmean
+  score = sum( y>=(pr$p-fac*vtot^0.5) & y<=(pr$p+fac*vtot^0.5) )
+  score = score/length(x)
+
+  # LOO stat
+  yloo=c()
+  for (iloo in 1:length(y)) {
+    y0 = y[-iloo] 
+    x0 = x[-iloo]
+    uy0= uy[-iloo]
+    r0 = wreglin(x0,y0,uy0)
+    yloo[iloo] = predlin(r0,x[iloo])$p
+  }
+  PSS = sum((y - yloo   )^2) 
+  TSS = sum((y - mean(y))^2)
+  Q2=1 - PSS/TSS
+
+  return(list(a=r$a, b=r$b, ud=r$ud2^0.5, 
+              vmean=vmean, ratioMax=ratio, 
+              score=score, Q2=Q2,
+              ua2=r$ua2, ub2=r$ub2, cab=r$cab))  
+}
+
+plot2Hist = function(data1,data2,fileName,xlab='X',ylab='Y',
+                     col1='blue',col2='red',density=2,
+                     breaks="Sturges",legends=c('Set 1','Set 2'),
+                     legendTitle=NULL) {
+  png(file=fileName,width=2400,height=1800)
+  par(mfrow=c(1,1),mar=c(3,3,1,1),cex=8,lwd=6)
+  ylim=c(0,max(hist(c(data1),plot=FALSE)$counts,
+               hist(c(data2),plot=FALSE)$counts))
+  hist(data1, breaks=breaks, freq=TRUE,col=col1,angle=45,
+       density=density,
+       main='',xlab='',xaxt='n',yaxt='n',ylab='',ylim=ylim)
+  axis(1, at = pretty(c(data1,data2)), pos=0, padj=-0.7,lwd=4) 
+  axis(2, padj=0.7, lwd=4)
+  title(ylab=ylab,line=2)
+  title(xlab=xlab,line=1.5)
+  hist(data2, breaks=breaks,freq=TRUE,col=col2,angle=-45,
+       density=density,add=TRUE) 
+  abline(h=0,lwd=4)
+  legend('topright', legend = legends, bty='n', title=legendTitle,
+         density=density, angle = c(45,-45), fill=c(col1,col2),
+         border=1)
+  dev.off()  
+  }
+
+plot2Dens = function(data1,data2,fileName,col1='green',col2='orchid',
+                     by='method',methList,sysList,legends=NULL,
+                     x.leg='topleft',y.leg=NULL,heightFactor=1
+                     ) {
+  png(file=fileName,width=2400,height=2400*heightFactor)
+  par(mfrow=c(1,1),mar=c(3,5.1,2,1.5),cex=8)
+  ylim=range(data1)
+  ll=list()
+  if(by=='method') {
+    for (i in 1:length(methList)) 
+      ll[[i]] = data1[i,1:length(sysList)]
+    names=prettyMethList    
+  } else {
+    for (i in 1:length(sysList)) 
+      ll[[i]] = data1[1:length(methList),i]         
+    names=sysList
+  }
+  
+  myVioplot(rev(ll),col=rep(col1,length(ll)),
+            drawRect=FALSE, horiz=TRUE,
+            yaxt='n',ylab='',ylim=ylim,
+            xaxt='n',xlab='',
+            side='r',lwd=2)
+  axis(1,lwd=4,padj=-0.7)
+  axis(3,lwd=4,padj= 0.7)
+  title(xlab= paste0('Errors on ',tolower(casesLong[ic]),
+                     casesUnits[ic]),line=1.5)
+  mtext(rev(paste0(names,' ')),side=2,
+        at=(1:length(names))-0.5/heightFactor,las=2,
+        srt=90,adj=1,padj=0,cex=8,col='black')
+  
+  ll=list()
+  if(by=='method') {
+  for (i in 1:length(methList)) 
+    ll[[i]] = data2[i,1:length(sysList)]     
+  } else {
+  for (i in 1:length(sysList)) 
+    ll[[i]] = data2[1:length(methList),i]         
+  }
+  myVioplot(rev(ll), col=rep(col2,length(ll)), 
+            drawRect=FALSE, horiz=TRUE,
+            side='l',lwd=2,add=TRUE)
+  
+   abline(h=1:length(names),col='gray30',lwd=2,lty=3)
+#   abline(v=c(-5,0,5,10),col='gray30',lwd=2,lty=3)
+  grid(ny=0,col='gray30',lwd=2,lty=3)
+  abline(v=0,lwd=2)
+  box(lwd=6)
+  if(!is.null(legends))
+    legend(x=x.leg, y=y.leg, cex=0.8,
+         legend = legends, bty='y', bg='gray90',
+         density = -1, fill=c(col1,col2), text.col=1)
+  dev.off()  
+}
+
+```
+
+Lecture des données 
+------------
+```{r DataRead, echo=FALSE}
+cases      = c('band-gap','bulk-mod','latt-param')
+casesLong  = c('Band gap', 'Bulk modulus','Lattice constant')
+casesUnits = c(' / eV', ' / GPa',' / \uc5')
+casesUexp  = c(0.01, 2.0, 0.001)
+
+# Get data for bulk modulus: as there are only 28 systems,
+# we will use them as calibration set for all methods
+# The validation set (9 points) will consist of 
+# the remaining data for latt-param and band-gap
+case=cases[2]
+data=data.frame(obs=case,uexp=casesUexp[2],
+                read.table(paste0('data/',case,'_28_cub_sys.csv'),
+                header=TRUE,fill=FALSE,stringsAsFactors=FALSE))
+sysRefList=sort(unique(data$System))
+data = setorder(data,System) 
+
+for (i in c(1,3)) {
+  case=cases[i]
+  data0=data.frame(obs=case,uexp=casesUexp[i],
+                   read.table(paste0('data/',case,'_37_cub_sys.csv'),
+                   header=TRUE,fill=TRUE,stringsAsFactors=FALSE))
+  sel   = data0$System %in% sysRefList
+  data1 = subset(data0,sel)
+  data1 = setorder(data1,System)  
+  data  = rbind(data,data1)
+  if(i==1) {
+    data1 = subset(data0,!sel)
+    dataVal = setorder(data1,System)  
+  } else {
+    data1 = subset(data0,!sel)
+    data1 = setorder(data1,System)  
+    dataVal = rbind(dataVal,data1)
+  }  
+}
+
+colnames(data)[ncol(data)]='exp1'
+colnames(dataVal)[ncol(dataVal)]='exp1'
+methList=names(data)[5:(ncol(data)-1)]
+prettyMethList= read.table(paste0('data/',cases[2],'_28_cub_sys.csv'),
+          header=FALSE,nrows=1,stringsAsFactors=FALSE)
+prettyMethList=unlist(prettyMethList[3:(length(prettyMethList)-1)])
+nMeth=length(methList)
+print(prettyMethList)
+sysList=sysRefList
+print(sort(sysList))
+sysValList=sort(unique(dataVal$System))
+print(sort(sysValList))
+
+sink(file=paste0(dest,'methodsAndSystems.txt'))
+cat('Methods:\n',prettyMethList,'\n\n')
+cat('Calib. Sys.:\n',sysList,'\n\n')
+cat('Valid. Sys.:\n',sysValList,'\n\n')
+sink() 
+
+# methColors = rainbow(nMeth)
+methColors = rainbow(19,start=0.05,end=0.90)
+names(methColors)=methList
+sysColors = rainbow(length(sysList)+1,start=0.05,end=0.90)
+```
+
+Calculs 
+------------
+### Sélection du degré de régression optimal par BMC (Mana 2014)
+```{r BMS, echo=FALSE}
+# Define validation models to be compared
+mods = c('y~1','y~0+x','y~1+x','y~1+x+I(x^2)','y~1+x+I(x^2)+I(x^3)')
+dfs  = c(1,1,2,3,4) # Nb of parameters in models
+
+modelTab=matrix(3,length(methList),length(cases))
+colnames(modelTab)=cases
+rownames(modelTab)=methList
+
+for (i in 1:length(cases)) {
+  par(mfrow=c(4,4),mar=c(3,2,4,0.1))
+  case=cases[i]
+  data0=subset(data,obs==case)
+  for (meth in methList) {
+    x   = data0$exp1
+    y   = data0[[meth]]
+    
+    ym  = mean(y)
+    ys  = sd(y)
+    yc  = y # scale(y)
+    N   = length(y)
+    
+    Prob=c()
+    for (imod in 1:length(mods)) {
+      degree=dfs[imod]
+      fit = lm(as.formula(mods[imod]),data=data.frame(y=yc,x=x))
+      
+      yp  = fit$fitted.values
+      eps = fit$residuals
+
+      lp1 = lgamma(0.5*(N-degree)) + lgamma(0.5*degree) - 
+        0.5*degree*log(sum(yp^2)) - 0.5*(N-degree)*log(t(yc)%*%eps)
+      lp2 = lgamma(0.5*(N-degree)) + lgamma(0.5*N) - 0.5*N*log(sum(yp^2)) + 
+        hypergeometric2F1(0.5*degree,
+                          0.5*(N-degree),
+                          0.5*(N-degree+2),
+                          t(yc)%*%eps / sum(yp^2), 
+                          method='Laplace', log=TRUE)
+      Prob[imod] = exp(lp1) - exp(lp2)
+      }
+    Prob = Prob/sum(Prob,na.rm=TRUE)
+    if(!any(is.na(Prob))) modelTab[meth,case]=which.max(Prob)
+    plot(1:length(mods),Prob,type='h',col='orange',lwd=10,main=paste(meth,case),
+         xlim=NULL,ylim=c(0,1),xlab='model', ylab='Probability')
+
+    grid()
+    }
+  }
+  modTxt=matrix(mods[modelTab],nrow=nrow(modelTab))
+rownames(modTxt)=prettyMethList
+colnames(modTxt)=cases
+knitr::kable(modTxt,'markdown')
+  sink(file='modelTable.txt')
+  cat('BMC model selection\n\n')
+  knitr::kable(modTxt,'markdown')
+  sink() 
+# WARNING : results not used : linear model (3)  assumed thereafter
+# use of model 2 when most probable seems to degrade performances...
+
+```
+
+### Performance statistics
+
+```{r Stats, echo=FALSE}
+resid=array(0.0,
+            dim=c(length(cases),length(methList),length(sysList)),
+            dimnames=list(property=cases,method=methList,system=sysList)
+)
+residUnc=residUncAbs=resid*0.0
+n=length(methList)
+
+madTab=matrix(0.,n,length(cases))
+colnames(madTab)=cases
+rownames(madTab)=methList
+madTabUnc = madTab
+rmsTabUnc = madTab
+rmsTab    = madTab
+rmsUncTab = madTab
+maeUncTab = madTab
+rmseUncTab = madTab
+mseUncTab = madTab
+mseTab = madTab
+
+for (i in 1:length(cases)) {
+  case=cases[i]
+  data0=subset(data,obs==case)
+  keep = data0$exp1 <= max(data0$exp1)
+  res=regressMethList(methList,data0,keep,regLin=TRUE)
+  reg=res$reg
+  for (meth in methList) resid[case,meth,]   = -reg[[meth]]$residuals
+  for (meth in methList) {
+    residUnc[case,meth,] = data0[[meth]]-data0$exp1
+    residUncAbs[case,meth,] = abs(residUnc[case,meth,])
+    }  
+  maeUncTab[,i] = apply(abs(residUnc[case,,]),1,mean)
+  mseUncTab[,i] = apply(residUnc[case,,],1,mean)
+  mseTab[,i]    = apply(resid[case,,],1,mean)
+  rmseUncTab[,i]= apply(residUnc[case,,]^2,1,mean)^0.5
+  rmsUncTab[,i] = apply(residUnc[case,,],1,
+                        function(x){sum((x-mean(x))^2)/length(x)} )^0.5 
+  rmsTabUnc[,i] = apply(residUnc[case,,],1,sd)
+  madTab[,i]    = apply(resid[case,,],1,mad)
+  madTabUnc[,i] = apply(residUnc[case,,],1,mad)
+  rmsTab[,i]    = apply(resid[case,,],1,
+                        function(x){sum((x-mean(x))^2)/length(x)} )^0.5 
+  }
+
+```
+
+### Linear calibration with paper's formulae + validation 
+
+```{r LinearCalib, echo=FALSE}
+ratioVar = meanPredVar = scorePred = q2Tab = 
+  ua2Tab = ub2Tab = cabTab =
+  aTab = bTab = udTab  =upmTab = madTab
+for (i in 1:length(cases)) {
+  case=cases[i]
+  data0=subset(data,obs==case)
+  for (meth in methList) {
+    res = mywols(data0[[meth]],data0$exp1,data0$uexp)
+    ratioVar[meth,case]    = res$ratioMax    
+    meanPredVar[meth,case] = res$vmean
+    scorePred[meth,case]   = res$score
+    q2Tab[meth,case]       = res$Q2
+    aTab[meth,case]        = res$a
+    bTab[meth,case]        = res$b
+    ua2Tab[meth,case]      = res$ua2
+    ub2Tab[meth,case]      = res$ub2
+    cabTab[meth,case]      = res$cab
+    udTab[meth,case]       = res$ud
+    upmTab[meth,case]      = res$vmean^0.5
+  }
+}
+
+# knitr::kable(ratioVar,'markdown')
+```
+
+Figures & tables
+------------
+
+### III.1 Error distributions
+
+```{r Figs_1-3, echo=FALSE}
+# Fig 1
+icase=3
+case=cases[icase]
+data0=subset(data,obs==case)
+keep = data0$exp1 <= max(data0$exp1)
+res=regressMethList(methList,data0,keep,regLin=TRUE)
+reg=res$reg
+meth = methList[6] 
+xlab=paste0('Calculated ',tolower(casesLong[icase]),casesUnits[icase])
+
+png(file=paste0(dest,'fig1Top.png'),width=2400,height=2400)
+par(mfrow=c(1,1),mar=c(4.5,4.5,1,1),cex=8)
+plot(data0[[meth]],data0$exp1,pch=20,col='blue',cex=0.75,lwd=4,
+     xlab=xlab,ylab=paste0('Reference ',tolower(casesLong[icase]),casesUnits[icase]))
+abline(a=0,b=1,lty=2,lwd=4)
+abline(reg=reg[[meth]],col='orange',lwd=8,lty=1)
+grid(col='gray20')
+points(data0[[meth]],data0$exp1,pch=20,col='blue',cex=1)
+legend('topleft',c(paste0(meth,' data'),'Regression line'), cex=0.9,
+       col=c('blue','orange'),pch=c(20,-1),lty=c(0,1),lwd=8,
+       title='(a)',title.adj=0.05,bty='n',inset=0.02)
+box(lwd=4)
+dev.off()
+
+ylim=c(-0.05,0.21)
+x=data0[[meth]]
+y=data0[[meth]]-data0$exp1
+
+png(file=paste0(dest,'fig1Bottom.png'),width=2400,height=2400)
+par(mfrow=c(1,1),mar=c(4.5,4.5,1,1),cex=8)
+plot(x,y,pch=20,col='blue',ylim=ylim,
+     xlab=xlab,ylab=paste0('Errors ',casesUnits[icase]))
+abline(reg=lm(y~x),col='orange',lwd=8)
+grid(col='gray20')
+points(x,y,pch=19,col='blue')
+col2='blue'
+abline(h=mean(y),col=col2,lwd=6)
+abline(h=mean(y)-sd(y),col=col2,lwd=6,lty=2)
+abline(h=mean(y)+sd(y),col=col2,lwd=6,lty=2)
+
+col2='red'
+points(data0[[meth]],-reg[[meth]]$residuals,pch=17,col='red',cex=1)
+abline(h=0,col=col2,lty=1,lwd=6)
+sig=rmsTab[6,icase]
+abline(h=c(sig,-sig),col=col2,lty=2,lwd=6)
+
+legend('topleft',
+       c('Before correction',
+         'Regression line',
+         'After correction'), 
+       cex=0.9,
+       col=c('blue','orange','red'),pch=c(19,-1,17),
+       lty=c(0,1,0),lwd=8,pt.cex=c(1,1,1),
+       title='(b)',title.adj=0.05,bty='n',inset=0.02)
+box(lwd=4)
+dev.off()
+
+
+
+# Fig 2
+ic = 3 # LC
+im = 6 # B3LYP
+fileName=paste0(dest,'fig2.png')
+data2 = resid[ic,im,]
+data1 = residUnc[ic,im,]
+
+plot2Hist(data1,data2,fileName,
+          col1='blue',col2='red',density=2,
+          breaks=seq(-0.05,0.23,0.02),
+          xlab=paste0('Error on ',tolower(casesLong[icase]),casesUnits[icase]),
+          ylab='Frequency',
+          legends=c('Before','After'))
+
+ 
+  
+
+
+# Fig 3
+png(file=paste0(dest,'fig3.png'),width=2400,height=1800)
+icase=3
+case=cases[icase]
+data0=subset(data,obs==case)
+data0Val=subset(dataVal,obs==case)
+meth = methList[6] 
+
+x=data0[[meth]]
+y=data0$exp1
+uy=data0$uexp
+rr = wreglin(x,y,uy)
+  
+x0 = seq(min(x),7.5,len=100)
+pr  = predlin(rr,x0)
+
+par(mfrow=c(1,1),mar=c(4,4,1,0.1),cex=8)
+xlab=paste0('Calculated ',tolower(casesLong[icase]),casesUnits[icase])
+col2='blue'
+lwd=6
+plot(x,y-rr$a-rr$b*x,pch=20,col='blue',ylim=c(-0.06,0.1),xlim=c(min(x),7.5),
+     xlab=xlab,ylab=paste0('Errors after correction ',casesUnits[icase]))
+grid(col='gray20')
+axis(1,lwd=4); axis(2,lwd=4)
+points(x,y-rr$a-rr$b*x,pch=19,col='blue')
+lines(x0,0*x0,col=col2,lty=1,lwd=lwd)
+d=(pr$up^2-pr$ul^2)^0.5
+lines(x0, pr$up,col=col2,lty=1,lwd=lwd)
+lines(x0,-pr$up,col=col2,lty=1,lwd=lwd)
+lines(x0, pr$ul,col=col2,lty=2,lwd=lwd)
+lines(x0,-pr$ul,col=col2,lty=2,lwd=lwd)
+lines(x0, d,col=col2,lty=3,lwd=lwd)
+lines(x0,-d,col=col2,lty=3,lwd=lwd)
+x=data0Val[[meth]]
+y=data0Val$exp1-rr$a-rr$b*x
+points(x,y, pch=17, col='red',cex=1)
+
+legend('topleft',cex=0.8,pt.cex=c(1,1,1,1,1,1),
+       c('Calibration set    ','Validation set    ','',
+         expression(u[f]),expression(d[m]),
+         expression(u[p])),
+       col=c(4,2,0,col2,col2,col2),
+       lty=c(0,0,0,2,3,1),
+       lwd=6,
+       pch=c(19,17,-1,-1,-1,-1),seg.len=1,
+       bty='n', ncol=2, x.intersp=0.5)
+box(lwd=4)
+
+dev.off()
+
+```
+
+### IV.2 Applications / Benchmark statistics
+
+```{r Table_II}
+# Table II
+tab=cbind(maeUncTab,rmseUncTab,mseUncTab,rmsUncTab)
+tab=signif(tab[,c(1,4,7,10,2,5,8,11,3,6,9,12)],digits=2)
+colnames(tab)=rep(c('MAE','RMSE','MSE','RMSD'),3)
+
+knitr::kable(tab,'markdown',digits=3)
+
+sink(file=paste0(dest,'table2.tex'))
+knitr::kable(tab,'latex',digits=3)
+sink()
+
+```
+
+### IV.3 Applications / Statistical modeling
+
+```{r Figs_4-5}
+
+#Figs 4 
+for (ic in 1:length(cases)) {
+  data1 = residUnc[ic,,]
+  data2 = resid[ic,,]
+  if(ic==1) 
+    legends = c('Before calibration','After calibration')
+  else
+    legends=NULL
+  
+  plot2Dens(data1,data2,fileName=paste0(dest,'fig4_',cases[ic],'.png'),
+            heightFactor=1.2,col1=blue_tr,col2=red_tr,
+            by='method',methList=methList,sysList=sysList,
+            legends = legends,
+            x.leg=2.2, y.leg=13.2)
+  }
+
+
+# Fig 5
+nm=length(methList)
+png(file=paste0(dest,'fig5.png'),width=2400,height=1800)
+par(mfrow=c(1,1),mar=c(5.1,3,0.1,0.1),cex=8)
+matplot(1:nm,q2Tab,col=1:3,
+        ylim=c(0.95,1.002),xaxt='n',xlab='',yaxs='i',
+        type='n', yaxt='n', ylab='')
+title(ylab='Leave One Out Statistics',line=2)
+axis(2,lwd=4,padj=0.7)
+mtext(paste0(prettyMethList,' '),side=1,
+      at=1:length(methList),las=2,
+      srt=90,adj=1,padj=0,cex=8)
+grid(col='gray30')
+matplot(1:nm,q2Tab,col=1:3,
+        type='l',lwd=6, add=TRUE)
+matplot(1:nm,q2Tab,col=1:3,
+        type='p',lwd=6,pch=15:17, add=TRUE)
+legend(8,0.969,cex=0.9, legend = casesLong, lty=1:3, col=1:3, 
+       pch=15:17,lwd=6, bty='n')
+box(lwd=4)
+dev.off()
+
+```
+
+### IV.4 Applications / Prediction uncertainty analysis
+
+```{r Table_III}
+# Table III
+tab=cbind(signif(aTab,4),
+          signif(bTab,4),
+          signif(udTab,2),
+          signif(upmTab,2))
+tab=tab[,c(1,4,7,10,2,5,8,11,3,6,9,12)]
+colnames(tab)=rep(c('a','b','d','up'),3)
+
+knitr::kable(tab,'markdown',digits=3)
+sink(file=paste0(dest,'table3.tex'))
+knitr::kable(tab,'latex',digits=3)
+sink()
+
+```
+
+### IV.D.2 Applications / Prediction uncertainty / External validation
+
+```{r Table_IV}
+q2ValTab = scoreValTab = madTab
+for (i in c(1,3)) {
+  case     = cases[i]
+  data0    = subset(data,obs==case)
+  yCal  = data0$exp1
+  uyCal = data0$uexp
+  data0Val = subset(dataVal,obs==case)
+  yVal  = data0Val$exp1
+  uyVal = data0Val$uexp
+  for (meth in methList) {
+    # Build predictor
+    xCal  = data0[[meth]]
+    rCal  = wreglin(xCal,yCal,uyCal)
+    pr    = predlin(rCal,xCal)
+
+    # Validation
+    xVal   = data0Val[[meth]]
+    prVal  = predlin(rCal,xVal)$p
+    uprVal = (predlin(rCal,xVal)$up^2 + uyVal^2)^0.5
+    
+    PSS = sum((yVal - prVal     )^2) 
+    TSS = sum((yVal - mean(yVal))^2)
+    Q2  = 1 - PSS/TSS
+    q2ValTab[meth,case] = Q2
+    
+    sig = mywols(xCal,yCal,uyCal)$vmean^0.5
+    fac = 2
+    score = sum( yVal>=(prVal-fac*sig) & 
+                 yVal<=(prVal+fac*sig) )
+    scoreValTab[meth,case] = score
+  
+  }
+}
+
+# Table IV
+# tab = q2ValTab[,-2]
+# knitr::kable(tab,'markdown',digits=3)
+# sink(file=paste0(dest,'table4Q2.tex'))
+# knitr::kable(tab,'latex',digits=3)
+# sink()
+
+tab = scoreValTab[,-2]
+knitr::kable(tab,'markdown',digits=3)
+sink(file=paste0(dest,'table4.tex'))
+knitr::kable(tab,'latex',digits=3)
+sink()
+```
+
+```{r Figs_6}
+# Fig 6
+icase = 3
+case  = cases[icase]
+meth  = methList[12]
+data0 = subset(data,obs==case)
+yCal  = data0$exp1
+uyCal  = data0$uexp
+data0Val = subset(dataVal,obs==case)
+yVal  = data0Val$exp1
+xCal  = data0[[meth]]
+rCal  = wreglin(xCal,yCal,uyCal)
+prCal = predlin(rCal,xCal)$p
+
+xVal  = data0Val[[meth]]
+prVal=c()
+for (iloo in 1:length(xVal))
+  prVal[iloo] = predlin(rCal,xVal[iloo])$p
+
+sig = mywols(xCal,yCal,uyCal)$vmean^0.5
+fac = 2 
+
+png(file=paste0(dest,'fig6.png'),width=2400,height=1600)
+par(mfrow=c(1,1),mar=c(5.1,3,1,0.1),cex=8,lwd=6)
+data1=xCal-yCal
+data2=xVal-yVal
+data3=prCal-yCal
+data4=prVal-yVal
+plot(range(c(data1,data2,data3,data4)),c(0,1),type='n',
+     xlab=paste0('Error on ',tolower(casesLong[icase]),casesUnits[icase]),
+     yaxt='n',ylab='')
+rect(-2*sig,-05,2*sig,1.5,col='gray95',border=NA)
+grid(col='gray30',lwd=2)
+points(data1,data1/data1,pch=19,col='blue')
+points(data2,data2/data2,pch=17,col='red')
+points(data3,0*data3,pch=19,col='blue')
+points(data4,0*data4,pch=17,col='red')
+segments(data1,data1/data1,data3,0*data3,col='blue')
+segments(data2,data2/data2,data4,0*data4,col='red')
+abline(v=0,lwd=2)
+mtext(c('Before ','After '),at=c(0.95,-0.02),side=2,outer=FALSE,las=2,
+        srt=90,adj=1,padj=0,cex=8,col='black')
+box(lwd=4)
+dev.off()
+
+
+```
+
+### IV.5 Applications / Sensitivity ro reference data uncertainty
+
+```{r Table_5, echo=FALSE}
+casesUexpHighU  = c(0.3, 7.0, 0.015)
+
+upmTabHighU = upmTab
+for (i in 1:length(cases)) {
+  case=cases[i]
+  data0=subset(data,obs==case)
+  for (meth in methList) {
+    uexp=rep(casesUexpHighU[i],length(data0$exp1))
+    res = mywols(data0[[meth]],data0$exp1,uexp)
+    upmTabHighU[meth,case] = res$vmean^0.5
+  }
+}
+# Table 5
+tab=cbind(signif(upmTab,2),signif(upmTabHighU,2))
+us=matrix(c(casesUexp,casesUexpHighU),nrow=1)
+rownames(us)='us'
+tab=rbind(us,tab)
+tab=tab[,c(1,4,2,5,3,6)]
+colnames(tab)=rep(c('up','upHighU'),3)
+
+knitr::kable(tab,'markdown',digits=3)
+sink(file=paste0(dest,'table5.tex'))
+knitr::kable(tab,'latex',digits=3)
+sink()
+
+```
+
+### IV.6 Applications / Looking back at the reference data
+
+```{r Figs_7, echo=FALSE}
+
+for (ic in 1:length(cases)) {
+  data1 = residUnc[ic,,]
+  data2 = resid[ic,,]
+  plot2Dens(data1,data2,fileName=paste0(dest,'fig7_',cases[ic],'.png'),
+            heightFactor=1.4,col1=blue_tr,col2=red_tr,
+             by='system',methList=methList,sysList=sysList,
+             legends=NULL,
+             x.leg=2.2, y.leg=13.2)
+  }
+
+
+```
+
+### Latex tables for Supp Mat
+ 
+```{r Tables_SuppMat, echo=FALSE}
+
+# Data sets
+# for (case in cases) {
+  case=cases[1]
+  data0=subset(data,obs==case)
+  knitr::kable(data0[,-1],'markdown',digits=5,row.names=FALSE)
+  sink(file=paste0(dest,'tableCalib_',case,'.tex'))
+  knitr::kable(data0[,-1],'latex',digits=3,row.names=FALSE)
+  sink() 
+  case=cases[2]
+  data0=subset(data,obs==case)
+  knitr::kable(data0[,-1],'markdown',digits=5,row.names=FALSE)
+  sink(file=paste0(dest,'tableCalib_',case,'.tex'))
+  knitr::kable(data0[,-1],'latex',digits=3,row.names=FALSE)
+  sink() 
+  case=cases[3]
+  data0=subset(data,obs==case)
+  knitr::kable(data0[,-1],'markdown',digits=5,row.names=FALSE)
+  sink(file=paste0(dest,'tableCalib_',case,'.tex'))
+  knitr::kable(data0[,-1],'latex',digits=3,row.names=FALSE)
+  sink() 
+# }
+# for (case in cases[c(1,3)]) {
+  case=cases[1]
+  data0=subset(dataVal,obs==case)
+  knitr::kable(data0[,-1],'markdown',digits=5,row.names=FALSE)
+  sink(file=paste0(dest,'tableValid_',case,'.tex'))
+  knitr::kable(data0[,-1],'latex',digits=3,row.names=FALSE)
+  sink() 
+  case=cases[3]
+  data0=subset(dataVal,obs==case)
+  knitr::kable(data0[,-1],'markdown',digits=5,row.names=FALSE)
+  sink(file=paste0(dest,'tableValid_',case,'.tex'))
+  knitr::kable(data0[,-1],'latex',digits=3,row.names=FALSE)
+  sink() 
+# }
+
+# Results Tables
+tab=cbind(signif(aTab,6),
+          signif(bTab,6),
+          signif(udTab^2,6),
+          signif(ua2Tab,6),
+          signif(ub2Tab,6),
+          signif(cabTab,6)
+          )
+
+# for (i in 1:3) { 
+  i=1
+  case=cases[i]
+  columns=c(1,4,7,10,13,16) + (i-1)
+  tab1=tab[,columns]
+  colnames(tab1)=c('a','b','d2','ua2','ub2','cab')
+  sink(file=paste0(dest,'table_SM_',case,'.tex'))
+  knitr::kable(tab1,'latex',digits=6)
+  sink()
+  i=2
+  case=cases[i]
+  columns=c(1,4,7,10,13,16) + (i-1)
+  tab1=tab[,columns]
+  colnames(tab1)=c('a','b','d2','ua2','ub2','cab')
+  sink(file=paste0(dest,'table_SM_',case,'.tex'))
+  knitr::kable(tab1,'latex',digits=6)
+  sink()
+  i=3
+  case=cases[i]
+  columns=c(1,4,7,10,13,16) + (i-1)
+  tab1=tab[,columns]
+  colnames(tab1)=c('a','b','d2','ua2','ub2','cab')
+  sink(file=paste0(dest,'table_SM_',case,'.tex'))
+  knitr::kable(tab1,'latex',digits=6)
+  sink()
+# }
+
+```
+
+```{r Figs_TOC}
+#Fig TOC
+ic=1  
+data1 = residUnc[ic,,]
+data2 = resid[ic,,]
+plot2Dens (data1,data2,fileName=paste0(dest,'figTOC.png'),
+           methList=methList,sysList=sysList,
+           legends=c('Before calibration','After calibration'),
+           x.leg=2.2, y.leg=13.2)
+
+
+```
