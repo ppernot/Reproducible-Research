@@ -1,0 +1,124 @@
+---
+title: 'Generate data for Table 1'
+author: "Pascal PERNOT"
+fontsize: 10pt
+output:
+  html_document: default
+  word_document:
+    fig_caption: yes
+    fig_width: 4.5
+institute: Laboratoire de Chimie Physique, UMR8000, CNRS/Univ. Paris-Sud
+email: pascal.pernot@u-psud.fr
+---
+
+```{r}
+rm(list = ls()) # Clean environment
+if(!require(rgumlib)) {
+  if(!require(devtools))
+    install.packages("devtools",dependencies=TRUE)
+  devtools::install_github("ppernot/rgumlib")
+  library("rgumlib")
+}
+set.seed(1234) # Initialise la graine du RNG
+```
+
+Définition du modèle et des variables
+------------
+
+```{r, tidy=FALSE}
+fExpr = expression(sin(x1) + 7*sin(x2)^2 + 0.1*sin(x1)*x3^4)
+
+x1 = 0  ; x1.u = 1.5*pi/3^0.5 ; x1.pdf = 'unif'
+x2 = 0  ; x2.u = pi/3^0.5 ; x2.pdf = 'unif'
+x3 = 0  ; x3.u = pi/3^0.5 ; x3.pdf = 'unif'
+
+params=collectParams(fExpr)
+attach(params)
+S=gumS1(nrun=100000,adapt=FALSE,silent=TRUE,
+        fExpr=fExpr,x.mu=x.mu,x.u=x.u,x.pdf=x.pdf,x.df=x.df)
+z=sobolSA(fExpr=fExpr,x.mu=x.mu,x.u=x.u,x.pdf=x.pdf,x.df=x.df)
+print(z)
+d= vgSA(fExpr=fExpr,x.mu=x.mu, x.u=x.u, X=S$X, Y=S$Y)
+
+tab = data.frame(signif(z$S,3),signif(z$T,3))
+colnames(tab)=c('S','T')
+tab = rbind(tab,c('',''))
+rownames(tab)=rownames(d$budget)
+
+sink(file='figs/tabs_Ishi.tex',append=FALSE)
+knitr::kable(cbind(d$budget,tab),format='latex')
+sink()
+
+detach(params)
+
+x1 = 0  ; x1.u = 0.9^0.5*pi/3^0.5 ; x1.pdf = 'unif'
+x2 = 0  ; x2.u = pi/3^0.5 ; x2.pdf = 'unif'
+x3 = 0  ; x3.u = pi/3^0.5 ; x3.pdf = 'unif'
+
+params=collectParams(fExpr)
+attach(params)
+S=gumS1(nrun=1000000,adapt=FALSE,silent=TRUE,
+        fExpr=fExpr,x.mu=x.mu,x.u=x.u,x.pdf=x.pdf,x.df=x.df)
+z=sobolSA(fExpr=fExpr,x.mu=x.mu,x.u=x.u,x.pdf=x.pdf,x.df=x.df)
+print(z)
+d= vgSA(fExpr=fExpr,x.mu=x.mu, x.u=x.u, X=S$X, Y=S$Y)
+
+tab = data.frame(signif(z$S,3),signif(z$T,3))
+colnames(tab)=c('S','T')
+tab = rbind(tab,c('',''))
+rownames(tab)=rownames(d$budget)
+
+sink(file='figs/tabs_Ishi.tex',append=TRUE)
+knitr::kable(cbind(d$budget,tab),format='latex')
+sink()
+
+detach(params)
+
+x1 = 0  ; x1.u = pi/3^0.5 ; x1.pdf = 'unif'
+x2 = 0  ; x2.u = 0.9^0.5*pi/3^0.5 ; x2.pdf = 'unif'
+x3 = 0  ; x3.u = pi/3^0.5 ; x3.pdf = 'unif'
+
+params=collectParams(fExpr)
+attach(params)
+S=gumS1(nrun=1000000,adapt=FALSE,silent=TRUE,
+        fExpr=fExpr,x.mu=x.mu,x.u=x.u,x.pdf=x.pdf,x.df=x.df)
+z=sobolSA(fExpr=fExpr,x.mu=x.mu,x.u=x.u,x.pdf=x.pdf,x.df=x.df)
+print(z)
+d= vgSA(fExpr=fExpr,x.mu=x.mu, x.u=x.u, X=S$X, Y=S$Y)
+
+tab = data.frame(signif(z$S,3),signif(z$T,3))
+colnames(tab)=c('S','T')
+tab = rbind(tab,c('',''))
+rownames(tab)=rownames(d$budget)
+
+sink(file='figs/tabs_Ishi.tex',append=TRUE)
+knitr::kable(cbind(d$budget,tab),format='latex')
+sink()
+
+detach(params)
+
+x1 = 0  ; x1.u = pi/3^0.5 ; x1.pdf = 'unif'
+x2 = 0  ; x2.u = pi/3^0.5 ; x2.pdf = 'unif'
+x3 = 0  ; x3.u = 0.9^0.5*pi/3^0.5 ; x3.pdf = 'unif'
+
+params=collectParams(fExpr)
+attach(params)
+S=gumS1(nrun=1000000,adapt=FALSE,silent=TRUE,
+        fExpr=fExpr,x.mu=x.mu,x.u=x.u,x.pdf=x.pdf,x.df=x.df)
+z=sobolSA(fExpr=fExpr,x.mu=x.mu,x.u=x.u,x.pdf=x.pdf,x.df=x.df)
+print(z)
+d= vgSA(fExpr=fExpr,x.mu=x.mu, x.u=x.u, X=S$X, Y=S$Y)
+
+tab = data.frame(signif(z$S,3),signif(z$T,3))
+colnames(tab)=c('S','T')
+tab = rbind(tab,c('',''))
+rownames(tab)=rownames(d$budget)
+
+sink(file='figs/tabs_Ishi.tex',append=TRUE)
+knitr::kable(cbind(d$budget,tab),format='latex')
+sink()
+
+detach(params)
+
+
+```
