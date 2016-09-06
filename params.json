@@ -1,0 +1,6 @@
+{
+  "name": "Reproducible-research",
+  "tagline": "Codes and data to reproduce the results of research by P. Pernot and collaborators",
+  "body": "# Reproducible Research\r\nCodes to reproduce the results of the following papers:\r\n\r\n* [PUIF](./PUIF) \r\n  \"The parameters uncertainty inflation fallacy\", by P. Pernot (submitted)\r\n  \r\n* [CalPred](./CalPred) \r\n  \"A critical review of statistical calibration/prediction models handling data inconsistency and model  inadequacy\", by P. Pernot and F. Cailliez (submitted)\r\n\r\n* [PU_DFA](./PU_DFA)\r\n  \"Prediction Uncertainty of Density Functional Approximations for Properties of Crystals with Cubic Symmetry\", \r\n  by P. Pernot, B. Civalleri, D. Presti and A. Savin, \r\n  [_J. Phys. Chem. A_ __119__:5288-5304 (2015)](http://dx.doi.org/10.1021/jp509980w).\r\n\r\n* [NegVar](./NegVar)\r\n  \"Model's output variance can increase when input variance decreases: a sensitivity analysis paradox?\"\r\n  by P. Pernot, M. Désenfant and F. Hennebelle,\r\n  [17th International Congress of Metrology, B. Larquier, Ed., EDP Sciences, 2015](http://dx.doi.org/10.1051/metrology/20150002004)",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
