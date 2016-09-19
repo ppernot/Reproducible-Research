@@ -343,7 +343,8 @@ plot_shifts <- function(model_tags, true_shifts=NULL,
     if(imod == 1) {
       plot(x,qShift[,3],type='n',
            xlim=c(0.5,nShift+0.5),ylim=ylim,
-           xlab='Series Index', ylab='Shift parameters',
+           xlab='Series Index',            
+           ylab=expression(paste('Shift parameters / ',mu,'Pa.s')),
            xaxt='n')
       axis(1,at=1:nShift)
       if(!is.null(true_shifts))
