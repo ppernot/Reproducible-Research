@@ -1,5 +1,5 @@
 # PU_DFA
-Codes to reproduce the results of the papers:
+Codes to reproduce the results of the paper:
 
 * "Prediction Uncertainty of Density Functional Approximations for Properties of Crystals with Cubic Symmetry", 
   by P. Pernot, B. Civalleri, D. Presti and A. Savin, 
