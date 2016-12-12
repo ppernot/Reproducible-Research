@@ -28,6 +28,11 @@ phys_model =
     collapse='\n'
   )
 
+# Sampling options
+nb_warmup = 1000
+nb_iter   = 5000
+nb_chains = 4
+
 # Ar ###############################################################
 case= 'Ar'
 inadequacy = FALSE
