@@ -5,7 +5,7 @@ Codes to reproduce the results of the following papers:
   "The parameters uncertainty inflation fallacy", by P. Pernot (submitted,
   [arXiv](https://arxiv.org/abs/1611.04295))
   
-* [CalPred](./CalPred) 
+* [CalPred](../CalPred) 
   "A critical review of statistical calibration/prediction models handling data inconsistency and model  inadequacy", by P. Pernot and F. Cailliez (submitted,     [arXiv](https://arxiv.org/abs/1611.04376))
 
 * [PU_DFA](./PU_DFA)
