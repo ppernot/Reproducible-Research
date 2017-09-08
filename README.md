@@ -3,12 +3,10 @@
 Codes to reproduce the results of the following papers:
 
 * [PUIF](https://github.com/ppernot/PUIF) 
-  "The parameters uncertainty inflation fallacy", by P. Pernot ([doi](http://dx.doi.org/10.1063/1.4994654),
-  [arXiv](https://arxiv.org/abs/1611.04295))
+  "The parameters uncertainty inflation fallacy", by P. Pernot ([doi](http://dx.doi.org/10.1063/1.4994654),[arXiv](https://arxiv.org/abs/1611.04295))
   
 * [CalPred](https://github.com/ppernot/CalPred) 
-  "A critical review of statistical calibration/prediction models handling data inconsistency and model  inadequacy", by P. Pernot and F. Cailliez (submitted,     
-  [arXiv](https://arxiv.org/abs/1611.04376))
+  "A critical review of statistical calibration/prediction models handling data inconsistency and model  inadequacy", by P. Pernot and F. Cailliez ([doi](http://dx.doi.org/10.1002/aic.15781),[arXiv](https://arxiv.org/abs/1611.04376))
 
 * [PU_DFA](./PU_DFA)
   "Prediction Uncertainty of Density Functional Approximations for Properties of Crystals with Cubic Symmetry", 
