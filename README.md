@@ -3,7 +3,7 @@
 Codes to reproduce the results of the following papers:
 
 * [PUIF](https://github.com/ppernot/PUIF) 
-  "The parameters uncertainty inflation fallacy", by P. Pernot (submitted,
+  "The parameters uncertainty inflation fallacy", by P. Pernot ([doi](http://dx.doi.org/10.1063/1.4994654),
   [arXiv](https://arxiv.org/abs/1611.04295))
   
 * [CalPred](https://github.com/ppernot/CalPred) 
