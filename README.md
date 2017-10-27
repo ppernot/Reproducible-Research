@@ -2,6 +2,9 @@
 
 Codes to reproduce the results of the following papers:
 
+* [ECDFT](https://github.com/ppernot/ECDFT) 
+  "Probabilistic performance estimators for computational chemistry methods: the empirical cumulative distribution function of absolute errors", by P. Pernot, E. Johnson and A. Savin (WIP)
+  
 * [PUIF](https://github.com/ppernot/PUIF) 
   "The parameters uncertainty inflation fallacy", by P. Pernot ([doi](http://dx.doi.org/10.1063/1.4994654),[arXiv](https://arxiv.org/abs/1611.04295))
   
