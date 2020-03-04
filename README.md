@@ -10,6 +10,7 @@ Codes to reproduce the results of the following papers:
   "Probabilistic performance estimators for computational chemistry methods: 
   Systematic Improvement Probability and Ranking Probability Matrix. II. Applications", 
   by P. Pernot and A. Savin (2020).
+  [arXiv](https://arxiv.org/abs/2003.01572) 
 
 * [ECDFT](https://github.com/ppernot/ECDFT) 
   "Probabilistic performance estimators for computational chemistry methods: the empirical cumulative distribution function of absolute errors", by P. Pernot and A. Savin [_J. Chem. Phys._ __148__:241707 (2018)](http://dx.doi.org/10.1063/1.5016248)     
