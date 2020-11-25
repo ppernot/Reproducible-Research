@@ -3,7 +3,7 @@
 Codes and data to reproduce the results of the following papers:
 
 * [ML2020](https://github.com/ppernot/ML2020)
-"Impact of non-normal error distributions on the benchmarking and ranking of Quantum Machine Learning models", by P. Pernot, B. Huang and A. Savin (2020) [_Machine Learning: Science and Technology_](https://doi.org/10.1088/2632-2153/aba184); [arXiv](https://arxiv.org/abs/2004.02524)
+"Impact of non-normal error distributions on the benchmarking and ranking of Quantum Machine Learning models", by P. Pernot, B. Huang and A. Savin (2020) [_Machine Learning: Science and Technology_](https://doi.org/10.1088/2632-2153/aba184); ([arXiv](https://arxiv.org/abs/2004.02524))
 
 * [SIP](https://github.com/ppernot/SIP)
   "Probabilistic performance estimators for computational chemistry methods: 
