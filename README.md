@@ -2,12 +2,47 @@
 
 Codes and data to reproduce the results of the following papers:
 
-* [2022_Tightness](https://github.com/ppernot/2022_Tightness)
-"Prediction uncertainty validation for computational chemists" by P. Pernot (2022)
-[arXiv](https://arxiv.org/abs/2204.13477)
+* [2024_SimRef](https://github.com/ppernot/2024_SimRef)
+"Validation of ML-UQ calibration statistics using simulated reference values: a sensitivity analysis" by P. Pernot (2024) [arXiv](https://doi.org/10.48550/arXiv.2403.00423)
+
+* [2024_RCE](https://github.com/ppernot/2024_RCE)
+"Negative impact of heavy-tailed uncertainty and
+error distributions on the reliability of calibration
+statistics for machine learning regression tasks"
+by P. Pernot (2024) [arXiv](https://doi.org/10.48550/arXiv.2402.10043) 
+
+* [2023_BVS](https://github.com/ppernot/2023_BVS)
+"Can bin-wise scaling improve consistency and adaptivity of prediction uncertainty for machine learning regression ?"
+by P. Pernot (2023) [arXiv](https://doi.org/10.48550/arXiv.2310.11978)
+
+* [2023_Adaptivity](https://github.com/ppernot/2023_Adaptivity)
+"Calibration in Machine Learning Uncertainty Quantification: beyond consistency to target adaptivity" by P. Pernot (2023)
+[_APL Mach. Learn._ __1__:046121](https://doi.org/10.1063/5.0174943); [arXiv](https://doi.org/10.48550/arXiv.2309.06240)
+
+* [2023_isotonic](https://github.com/ppernot/isotonic)
+"Stratification of uncertainties recalibrated by isotonic regression and its impact on calibration error statistics" by P. Pernot (2023)  [arXiv](https://doi.org/10.48550/arXiv.2306.05180)
+
+* [2023_ENCE](https://github.com/ppernot/2023_ENCE)
+"Properties of the ENCE and other MAD-based calibration metrics"
+by P. Pernot (2023) [arXiv](https://doi.org/10.48550/arXiv.2305.11905)
+
+* [2023_Primer](https://github.com/ppernot/2023_Primer)
+"Validation of uncertainty quantification metrics: a primer based on the consistency and adaptivity concepts" by P. Pernot (2023)
+[arXiv](https://doi.org/10.48550/arXiv.2303.07170)
+
+* [2022_SampleMean](https://github.com/ppernot/2022_SampleMean)
+"Comparison of recent estimators of uncertainty 
+on the mean for small measurement samples with 
+normal and non-normal error distributions"
+by P. Pernot and J.-P. Berthet (2022) [arXiv](https://doi.org/10.48550/arXiv.2209.04180)
 
 * [2022_Confidence](https://github.com/ppernot/2022_Confidence)
 "Confidence curves for UQ validation: probabilistic reference vs. oracle" by P. Pernot (2022) [arXiv](https://arxiv.org/abs/2206.15272v1)
+
+* [2022_Tightness](https://github.com/ppernot/2022_Tightness)
+"Prediction uncertainty validation for computational chemists" by P. Pernot (2022)
+[_J. Chem. Phys._ __157__:144103](https://doi.org/10.1063/5.0109572); 
+[arXiv](https://doi.org/10.48550/arXiv.2204.13477)
 
 * [PU2022](https://github.com/ppernot/PU2022)
 "The long road to calibrated prediction uncertainty in computational chemistry"
